@@ -16,6 +16,7 @@ env:
   AK_SCHEME: "DVIA-v2"
   AK_XCARGS: ""
   POD_DIR: "DVIA-v2"
+  PRE_CMD: "perl -0pi -e 's/(post_install do \\|installer\\|\\n)/$1  installer.pods_project.targets.each { |t| t.build_configurations.each { |c| c.build_settings[\"IPHONEOS_DEPLOYMENT_TARGET\"] = \"13.0\" } }\\n/' DVIA-v2/Podfile && grep -n IPHONEOS_DEPLOYMENT_TARGET DVIA-v2/Podfile"           # repo-specific setup before pods/build (e.g. generated xcconfig)
 
 jobs:
   build:
@@ -28,6 +29,9 @@ jobs:
           x=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$x"
           xcodebuild -version
+      - name: Repo setup
+        if: env.PRE_CMD != ''
+        run: bash -euo pipefail -c "$PRE_CMD"
       - name: Install pods
         if: env.POD_DIR != ''
         run: cd "$POD_DIR" && pod install --repo-update
