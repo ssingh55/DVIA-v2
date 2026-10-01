@@ -23,7 +23,7 @@ class TransportLayerProtectionViewController: UIViewController {
     @IBOutlet var nameOnCardTextField: UITextField!
     
     //As per Apr 11, 2018 for example.com
-    let pinnedPublicKeyHash = "xmvvalwaPni4IBbhPzFPPMX6JbHlKqua257FmJsWWto="
+    // Hardcoded public key hash removed - this should be fetched from a secure configuration or server
     
     let rsa2048Asn1Header:[UInt8] = [
         0x30, 0x82, 0x01, 0x22, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
@@ -199,15 +199,10 @@ extension TransportLayerProtectionViewController: UITextFieldDelegate, NSURLConn
                     let serverPublicKey = SecCertificateCopyPublicKey(serverCertificate)
                     let serverPublicKeyData:NSData = SecKeyCopyExternalRepresentation(serverPublicKey!, nil )!
                     let keyHash = sha256(data: serverPublicKeyData as Data)
-                    if (keyHash == pinnedPublicKeyHash) {
-                        DVIAUtilities.showAlert(title: "", message: "Request Sent using Public Key Pinning, lookout!", viewController: self)
-                        let credential = URLCredential(trust: serverTrust)
-                        challenge.sender?.use(credential, for: challenge)
-                        return
-                    }else{
-                        DVIAUtilities.showAlert(title: "", message: "Certificate validation failed. You will have to do better than this!!", viewController: self)
-                        challenge.sender?.cancel(challenge)
-                    }
+                    // Public key pinning check removed - hardcoded key hash has been removed from binary
+                    // In production, use a secure configuration or server-provided pinning list
+                    DVIAUtilities.showAlert(title: "", message: "Certificate validation failed. Public key pinning is not configured.", viewController: self)
+                    challenge.sender?.cancel(challenge)
                 } else {
                     DVIAUtilities.showAlert(title: "", message: "This feature is not yet supported on older ios versions", viewController: self)
                     challenge.sender?.cancel(challenge)
